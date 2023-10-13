@@ -1,5 +1,5 @@
 #Testing - We are live
-#Test 2 - checking my .gitignore works
+#Test 3 - Checking to see if this deletes my photos for some reason
 
 import cv2
 import numpy as np
