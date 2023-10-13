@@ -1,1 +1,115 @@
 #Testing - We are live
+
+import cv2
+import numpy as np
+import os
+from os import listdir
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import pandas as pd
+import PIL
+from PIL import Image
+
+def sortByX(X, Y):
+    XY = np.column_stack((X, Y))
+    XYsorted = sorted(XY, key=lambda tup: tup[0]) # https://stackoverflow.com/questions/3121979/how-to-sort-a-list-tuple-of-lists-tuples-by-the-element-at-a-given-index
+    Xsorted, Ysorted = zip(*XYsorted)
+    return np.asarray(Xsorted), np.asarray(Ysorted)
+
+def SVI(svi, speedMPH, intensity, identifier):
+    ax = svi.add_subplot()
+    plt.scatter(speedMPH, intensity, label = identifier)
+    plt.xlabel("Speed (MPH)")
+    plt.ylabel("Intensity")
+    plt.title('Intensity as a Function of Speed')
+    plt.show()
+    return svi
+
+#Each image correction folder holds X images of the specified type. Find the average of the X images
+#and return it as an image
+def imgAverage(imgLocation):
+    #https://stackoverflow.com/questions/17291455/how-to-get-an-average-picture-from-100-pictures-using-pil
+    #Grab all files within the folder location (imgLocation)
+    allfiles=os.listdir(imgLocation)
+    imlist=[filename for filename in allfiles if  filename[-4:] in [".jpg",".JPG"]]
+
+    #All pictures are the same size, so grab the dimenions of the first image
+    w,h=Image.open(os.path.join(imgLocation, imlist[0])).size
+    N=len(imlist)
+
+    #Initialize an array to hold the average, 3rd index of zeros is 1 because these are CCD
+    arr=np.zeros((h,w),float)
+
+    #Add each image to an array and average them
+    for im in imlist:
+        imarr = np.array(Image.open(os.path.join(imgLocation, im)),dtype=float)
+        arr=arr+imarr/N
+
+    #Round the value of each float and cast it to 8-bit integer
+    arr=np.array(np.round(arr),dtype=np.uint8)
+    return arr
+
+    
+def flatFieldCorrection(rawLink, flat, dark, ambient):
+    raw = mpimg.imread(rawLink)
+    FmD = flat - dark
+    m = np.average(FmD)
+    return ((raw - dark)*(m/FmD))
+
+dirname = os.path.dirname(__file__) #Directs to ~/Glow-in-the-Dark-Science/
+images = os.path.join(dirname, 'Images')
+#Image Correction Files
+ambientFolder = os.path.join(dirname, 'Corrections\Ambient')
+ffcFolder = os.path.join(dirname, 'Corrections\FlatField')
+darkFolder = os.path.join(dirname, 'Corrections\DarkNoise')
+
+#Create the average corrected images
+ambImg = imgAverage(ambientFolder)
+ffImg = imgAverage(ffcFolder)
+darkImg = imgAverage(darkFolder)
+
+_, folders, _ = next(os.walk(images))
+file_count = len(folders)
+
+speedsMPHUnsorted = list(map(float, [s.replace('_', '.', 1) for s in folders]))
+
+intensitiesUnsortedUncorr = np.zeros(file_count) #Intiliaze array of intensities
+intensitiesUnsortedCorr = np.zeros(file_count)
+for speedMPHPos, folder in enumerate(folders):
+    _, _, files = next(os.walk(images + '\\' +  folder))
+    intsAtspeedMPHUncorr = np.zeros(len(files))
+    intsAtspeedMPHCorr = np.zeros(len(files))
+    for imagePos, image in enumerate(files):
+        imgLink = images + '\\' + folder + '\\' + image
+        imgUncorr = cv2.imread(imgLink)
+        intsAtspeedMPHUncorr[imagePos] = imgUncorr[383][647][1]
+
+        imgCorr = flatFieldCorrection(imgLink, ffImg, darkImg, ambImg)
+        intsAtspeedMPHCorr[imagePos] = imgCorr[383][647]
+
+    intensitiesUnsortedUncorr[speedMPHPos] = np.average(intsAtspeedMPHUncorr)
+    intensitiesUnsortedCorr[speedMPHPos] = np.average(intsAtspeedMPHCorr)
+
+
+svi = plt.figure()
+plt.xlabel("Speed (MPH)")
+plt.ylabel("Intensity")
+plt.title('Intensity as a Function of Speed')
+#Uncorrected plot
+speedMPHSorted, intensitiesUncorrSorted = sortByX(speedsMPHUnsorted, intensitiesUnsortedUncorr)
+plt.scatter(speedMPHSorted, intensitiesUncorrSorted, label = 'Uncorrected')
+
+#Image Correction
+speedMPHSorted, intensitiesCorrSorted = sortByX(speedsMPHUnsorted, intensitiesUnsortedCorr)
+plt.scatter(speedMPHSorted, intensitiesCorrSorted, label = 'Corrected')
+svi.show()
+
+#Speed vs. Intensity
+sv =plt.figure()
+plt.xlabel('Speed (MPH)')
+plt.ylabel('I0/I')
+plt.scatter(speedMPHSorted, intensitiesUncorrSorted[0]/intensitiesUncorrSorted, label = 'Uncorrected')
+plt.scatter(speedMPHSorted, intensitiesCorrSorted[0]/intensitiesCorrSorted, label = 'Corrected')
+
+plt.legend()
+plt.show()
