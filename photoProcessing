@@ -103,14 +103,15 @@ plt.scatter(speedMPHSorted, intensitiesUncorrSorted, label = 'Uncorrected')
 #Image Correction
 speedMPHSorted, intensitiesCorrSorted = sortByX(speedsMPHUnsorted, intensitiesUnsortedCorr)
 plt.scatter(speedMPHSorted, intensitiesCorrSorted, label = 'Corrected')
+plt.legend()
 svi.show()
 
 #Speed vs. Intensity
-sv =plt.figure()
-plt.xlabel('Speed (MPH)')
-plt.ylabel('I0/I')
-plt.scatter(speedMPHSorted, intensitiesUncorrSorted[0]/intensitiesUncorrSorted, label = 'Uncorrected')
-plt.scatter(speedMPHSorted, intensitiesCorrSorted[0]/intensitiesCorrSorted, label = 'Corrected')
+#sv =plt.figure()
+#plt.xlabel('Speed (MPH)')
+#plt.ylabel('I0/I')
+#plt.scatter(speedMPHSorted, intensitiesUncorrSorted[-1]/intensitiesUncorrSorted, label = 'Uncorrected')
+#plt.scatter(speedMPHSorted, intensitiesCorrSorted[-1]/intensitiesCorrSorted, label = 'Corrected')
 
 plt.legend()
 plt.show()
