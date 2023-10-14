@@ -2,6 +2,7 @@ import os
 from PIL import Image
 import matplotlib.image as mpimg
 import numpy as np
+import cv2
 
 def imgAverage(imgLocation):
     #https://stackoverflow.com/questions/17291455/how-to-get-an-average-picture-from-100-pictures-using-pil
@@ -43,3 +44,16 @@ def flatFieldCorrection(raw, flat, dark):
     FmD = flat - dark
     m = np.average(FmD)
     return ((raw - dark)*(m/FmD))
+
+def outlineImageHeatmap(img, imgToCombineWith):
+    # https://stackoverflow.com/questions/46020894/superimpose-heatmap-on-a-base-image-opencv-python
+    # Current function will return an outline of a sample as long as the background is dark
+    th = cv2.threshold(img,140,255,cv2.THRESH_BINARY)[1]
+    blur = cv2.GaussianBlur(th,(13,13), 11)
+    heatmap_img = cv2.applyColorMap(blur, cv2.COLORMAP_JET)
+    hm1d = heatmap_img[:, :, 1]
+    hm1dMatchType = hm1d.astype(imgToCombineWith.dtype)
+    #Below for superimposing images (if needed)
+    #super_imposed_img = cv2.addWeighted(hm1dMatchType, 0.9, pressureDistribution, 0.5, 0)
+
+    return hm1dMatchType
