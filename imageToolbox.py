@@ -4,6 +4,22 @@ import matplotlib.image as mpimg
 import numpy as np
 import cv2
 
+def cropPhotos(photosLocation, yMinC, yMaxC, xMinC, xMaxC):
+    #Create a folder to store the cropped photos
+    os.makedirs(photosLocation + '/Cropped')
+    cropAddress = os.path.join(photosLocation, 'Cropped')
+
+    #https://stackoverflow.com/questions/17291455/how-to-get-an-average-picture-from-100-pictures-using-pil
+    #Grab all files within the folder location (imgLocation)
+    allfiles=os.listdir(photosLocation)
+    imlist=[filename for filename in allfiles if  filename[-4:] in [".jpg",".JPG"]]
+
+    for im in imlist:
+        originalIm = mpimg.imread(os.path.join(photosLocation, im))
+        croppedIm = originalIm[yMinC:yMaxC, xMinC:xMaxC]
+        #cv2.imwrite(os.path.join(photosLocation, '\Cropped', im), croppedIm)
+        cv2.imwrite(os.path.join(cropAddress, im), croppedIm)
+
 def imgAverage(imgLocation):
     #https://stackoverflow.com/questions/17291455/how-to-get-an-average-picture-from-100-pictures-using-pil
     #Grab all files within the folder location (imgLocation)
@@ -30,9 +46,9 @@ def createCorrectionImages(dirname):
     # Function that generates the ambient, flat-field, and dark-noise images for the image correction
     # Designed to be only run once to save computational space
     #Image Correction Files
-    ambientFolder = os.path.join(dirname, 'Corrections\Ambient')
-    ffcFolder = os.path.join(dirname, 'Corrections\FlatField')
-    darkFolder = os.path.join(dirname, 'Corrections\DarkNoise')
+    ambientFolder = os.path.join(dirname, 'Corrections\Ambient\Cropped')
+    ffcFolder = os.path.join(dirname, 'Corrections\FlatField\Cropped')
+    darkFolder = os.path.join(dirname, 'Corrections\DarkNoise\Cropped')
 
     #Create the average corrected images
     ambImg = imgAverage(ambientFolder)
