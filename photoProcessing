@@ -8,10 +8,30 @@ from os import listdir
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import pandas as pd
-import PIL
 from PIL import Image
 
 def sortByX(X, Y):
+    """Crops all photos in a directory based on the (x,y) coordinates of the crop area.
+    Creates a folder within the directory titled '/Cropped' containing the cropped images 
+
+    Parameters
+    ----------
+    photos_location : str
+        Directory that contains the folders with the images
+    y_min : int
+        The minimum y location of the crop area (bottom left y-coordinate)
+    y_max : int
+        The maximum y location of the crop area (top right y-coordinate)
+    x_min : int
+        The minimum x location of the crop area (bottom left x-coordinate)
+    x_max : int
+        The maximum x location of the crop area (top right x-coordinate)
+    
+
+    Returns
+    -------
+    None
+    """
     XY = np.column_stack((X, Y))
     XYsorted = sorted(XY, key=lambda tup: tup[0]) # https://stackoverflow.com/questions/3121979/how-to-sort-a-list-tuple-of-lists-tuples-by-the-element-at-a-given-index
     Xsorted, Ysorted = zip(*XYsorted)

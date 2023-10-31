@@ -43,7 +43,7 @@ def cropPhotos(photos_location, y_min, y_max, x_min, x_max):
         cv2.imwrite(os.path.join(cropAddress, im), croppedIm)
 
 def imgAverage(images_location):
-   """Performs element-wise averaging of the images within the input directory.  
+    """Performs element-wise averaging of the images within the input directory.  
 
     Parameters
     ----------
@@ -53,12 +53,11 @@ def imgAverage(images_location):
 
     Returns
     -------
-    None
+        None
     """
-   
     #https://stackoverflow.com/questions/17291455/how-to-get-an-average-picture-from-100-pictures-using-pil
     #Grab all files within the folder location (imgLocation)
-    allfiles=os.listdir(images_location)
+    allfiles = os.listdir(images_location)
     imlist=[filename for filename in allfiles if  filename[-4:] in [".jpg",".JPG"]]
 
     #All pictures are the same size, so grab the dimenions of the first image
@@ -78,13 +77,13 @@ def imgAverage(images_location):
     return arr
 
 def createCorrectionImages(folders_location):
-    """Applies a flat-field correction to the images within the directory
+    """Applies the imgAverage() function to the 3 folders of images required to perform the flat
+    field image correction.
 
     ## Prerequisites
     1. Create a folder 'Corrections\' within the directory
     2. Include folders named 'Ambient' 'FlatField' and 'DarkNoise' for each of the 3 types
     and include the photos within them.
-    3. Function 'imgAverage' must be run on the folders listed in step 2
 
     Parameters
     ----------
@@ -116,11 +115,49 @@ def createCorrectionImages(folders_location):
     return ambient_image, flat_field_image, dark_noise_image
 
 def flatFieldCorrection(raw, flat, dark):
+    """Applies a flat-field correction to the each image within the directory
+
+    ## Prerequisite:
+    Function createCorrectionImages() must have run first to create the correction images
+
+    Parameters
+    ----------
+    raw : image
+        image of sample (averaged)
+    flat : image
+        flat field image (uniformly illuminated white paper, averaged)
+    dark : image
+        image taken with the lens cap on (dark-noise, averaged)
+
+        
+
+    Returns
+    -------
+    corrected_image : image
+        single image with flat-field correction applied
+    """
+
     FmD = flat - dark
     m = np.average(FmD)
-    return ((raw - dark)*(m/FmD))
+    corrected_image = ((raw - dark)*(m/FmD))
+    return corrected_image
 
 def outlineImageHeatmap(img, imgToCombineWith):
+    """Identifies focal image, blurs, and applies an outline. 
+    This outline is then superimposed over another image.
+
+    Parameters
+    ----------
+    img : image
+        image to take outline of
+    imgToCombineWith : image
+        image to superimpose outline over        
+
+    Returns
+    -------
+    hm1dMatchType : image
+        imgToCombineWith with outline of img superimposed
+    """
     # https://stackoverflow.com/questions/46020894/superimpose-heatmap-on-a-base-image-opencv-python
     # Current function will return an outline of a sample as long as the background is dark
     th = cv2.threshold(img,140,255,cv2.THRESH_BINARY)[1]

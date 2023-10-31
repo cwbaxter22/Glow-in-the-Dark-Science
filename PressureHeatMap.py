@@ -1,8 +1,9 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-import cv2
 import plotly.express as px
+import cv2
+
 from imageToolbox import createCorrectionImages
 from imageToolbox import imgAverage
 from imageToolbox import flatFieldCorrection
