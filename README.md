@@ -1,6 +1,7 @@
 # Glow-in-the-Dark-Science
 Code to process Pressure-Sensitive Paint (PSP) images taken of wind tunnel models using a CCD camera
-**Note:** This repository will soon be replaced by a better version in the Glow-In-The-Dark repository.
+  
+  **Note:** This repository will soon be replaced by a better version in the Glow-In-The-Dark repository.
 This repo was created prior to taking a course in Software Engineering. The skills learned will be implemented there. 
 
 # PressureHeatMap.py
